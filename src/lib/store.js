@@ -5,7 +5,11 @@
 /* Reduxのstore/actions/reducerのシンプルな実装。
  * 実際のアプリケーションはもっと複雑であり、異なるファイルに分割されている。
  */
-import { configureStore, createSlice } from '@reduxjs/toolkit';
+import {
+  configureStore,
+  createSlice,
+  createAsyncThunk,
+} from '@reduxjs/toolkit';
 
 /*
  * The initial state of our store when the app loads.
@@ -15,17 +19,33 @@ import { configureStore, createSlice } from '@reduxjs/toolkit';
 /* アプリケーションのロード時のストアの初期状態。
  * 通常、サーバーからこれを取得します。今はそれについて心配しません
  */
-const defaultTasks = [
-  { id: '1', title: 'Something', state: 'TASK_INBOX' },
-  { id: '2', title: 'Something more', state: 'TASK_INBOX' },
-  { id: '3', title: 'Something else', state: 'TASK_INBOX' },
-  { id: '4', title: 'Something again', state: 'TASK_INBOX' },
-];
 const TaskBoxData = {
-  tasks: defaultTasks,
+  tasks: [],
   status: 'idle',
   error: null,
 };
+/*
+ * Creates an asyncThunk to fetch tasks from a remote endpoint.
+ * You can read more about Redux Toolkit's thunks in the docs:
+ * https://redux-toolkit.js.org/api/createAsyncThunk
+ */
+// Japanese Comment
+/* リモートエンドポイントからタスクを取得するためのasyncThunkを作成します。
+ * Redux Toolkitのthunkについて詳しくはドキュメントを参照してください:
+ * https://redux-toolkit.js.org/api/createAsyncThunk
+ */
+export const fetchTasks = createAsyncThunk('todos/fetchTodos', async () => {
+  const response = await fetch(
+    'https://jsonplaceholder.typicode.com/todos?userId=1'
+  );
+  const data = await response.json();
+  const result = data.map((task) => ({
+    id: `${task.id}`,
+    title: task.title,
+    state: task.completed ? 'TASK_ARCHIVED' : 'TASK_INBOX',
+  }));
+  return result;
+});
 
 /*
  * The store is created here.
@@ -42,12 +62,39 @@ const TasksSlice = createSlice({
   initialState: TaskBoxData,
   reducers: {
     updateTaskState: (state, action) => {
-      const { id, newTaskSatate } = action.payload;
-      const task = state.tasks.find((task) => task.id === id);
+      const { id, newTaskState } = action.payload;
+      const task = state.tasks.findIndex((task) => task.id === id);
       if (task >= 0) {
-        state.tasks[task].state = newTaskSatate;
+        state.tasks[task].state = newTaskState;
       }
     },
+  },
+  /*
+   * Extends the reducer for the async actions
+   * You can read more about it at https://redux-toolkit.js.org/api/createAsyncThunk
+   */
+  // Japanese Comment
+  /* 非同期アクションのためにリデューサーを拡張します
+   * 詳しくはhttps://redux-toolkit.js.org/api/createAsyncThunkを参照してください
+   */
+  extraReducers(builder) {
+    builder
+      .addCase(fetchTasks.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+        state.tasks = [];
+      })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.error = null;
+        // Add any fetched tasks to the array
+        state.tasks = action.payload;
+      })
+      .addCase(fetchTasks.rejected, (state) => {
+        state.status = 'failed';
+        state.error = "Something went wrong";
+        state.tasks = [];
+      });
   },
 });
 

@@ -2449,6 +2449,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@storybook/addon-a11y@npm:8.1.4":
+  version: 8.1.4
+  resolution: "@storybook/addon-a11y@npm:8.1.4"
+  dependencies:
+    "@storybook/addon-highlight": "npm:8.1.4"
+    axe-core: "npm:^4.2.0"
+  checksum: 10c0/f8a651131ad6c14148962f42668238712cb7714ece17efcfa006947fdb85b1990fd1bb03b7bcd341c6b4b4ae2139159cc1c9bea12ec359d9781db17266770ee2
+  languageName: node
+  linkType: hard
+
 "@storybook/addon-actions@npm:8.1.4":
   version: 8.1.4
   resolution: "@storybook/addon-actions@npm:8.1.4"
@@ -4189,6 +4199,13 @@ __metadata:
   dependencies:
     possible-typed-array-names: "npm:^1.0.0"
   checksum: 10c0/d07226ef4f87daa01bd0fe80f8f310982e345f372926da2e5296aecc25c41cab440916bbaa4c5e1034b453af3392f67df5961124e4b586df1e99793a1374bdb2
+  languageName: node
+  linkType: hard
+
+"axe-core@npm:^4.2.0":
+  version: 4.10.0
+  resolution: "axe-core@npm:4.10.0"
+  checksum: 10c0/732c171d48caaace5e784895c4dacb8ca6155e9d98045138ebe3952f78457dd05b92c57d05b41ce2a570aff87dbd0471e8398d2c0f6ebe79617b746c8f658998
   languageName: node
   linkType: hard
 
@@ -6646,6 +6663,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "intro-storybook-react-template@workspace:."
   dependencies:
+    "@storybook/addon-a11y": "npm:8.1.4"
     "@storybook/addon-essentials": "npm:^8.1.4"
     "@storybook/addon-interactions": "npm:^8.1.4"
     "@storybook/addon-links": "npm:^8.1.4"

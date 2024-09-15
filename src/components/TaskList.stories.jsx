@@ -1,53 +1,112 @@
-import TaskList from "./TaskList";
+import TaskList from './TaskList';
 
-import * as TaskStories from "./Task.stories";
+import * as TaskStories from './Task.stories';
+
+import { Provider } from 'react-redux';
+
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+
+// A super-simple mock of the state of the store : japanese comment : ストアの状態の超簡単なモック
+export const MockedState = {
+  tasks: [
+    { ...TaskStories.Default.args.task, id: '1', title: 'Task 1' },
+    { ...TaskStories.Default.args.task, id: '2', title: 'Task 2' },
+    { ...TaskStories.Default.args.task, id: '3', title: 'Task 3' },
+    { ...TaskStories.Default.args.task, id: '4', title: 'Task 4' },
+    { ...TaskStories.Default.args.task, id: '5', title: 'Task 5' },
+    { ...TaskStories.Default.args.task, id: '6', title: 'Task 6' },
+  ],
+  status: 'idle',
+  error: null,
+};
+
+// A super-simple mock of a redux store : japanese comment : reduxストアの超簡単なモック
+const Mockstore = ({ taskboxState, children }) => (
+  <Provider
+    store={configureStore({
+      reducer: {
+        taskbox: createSlice({
+          name: 'taskbox',
+          initialState: taskboxState,
+          reducers: {
+            updateTaskState: (state, action) => {
+              const { id, newTaskState } = action.payload;
+              const task = state.tasks.findIndex((task) => task.id === id);
+              if (task >= 0) {
+                state.tasks[task].state = newTaskState;
+              }
+            },
+          },
+        }).reducer,
+      },
+    })}
+  >
+    {children}
+  </Provider>
+);
 
 export default {
   component: TaskList,
   title: 'TaskList',
-  decorators: [(story) => <div style={{ margin: '3em' }}>{story()}</div>],
+  decorators: [(story) => <div style={{ margin: '3rem' }}>{story()}</div>], // japanese comment : デコレーターを使用して、ストーリーの外観を変更します
   tags: ['autodocs'],
-  args: {
-    ...TaskStories.ActionsData,
-  }
-}
+  excludeStories: /.*MockedState$/, // Exclude MockedState from the generated story list : japanese comment : 生成されたストーリーリストからMockedStateを除外します
+};
 
 export const Default = {
-  args: {
-    // Shaping the stories through args composition.
-    // The data was inherited from the Default story in Task.stories.jsx.
-    tasks: [
-      { ...TaskStories.Default.args.task, id: '1', title: 'Task 1' },
-      { ...TaskStories.Default.args.task, id: '2', title: 'Task 2' },
-      { ...TaskStories.Default.args.task, id: '3', title: 'Task 3' },
-      { ...TaskStories.Default.args.task, id: '4', title: 'Task 4' },
-      { ...TaskStories.Default.args.task, id: '5', title: 'Task 5' },
-      { ...TaskStories.Default.args.task, id: '6', title: 'Task 6' },
-    ],
-  },
+  decorators: [
+    (story) => <Mockstore taskboxState={MockedState}>{story()}</Mockstore>,
+  ], // japanese comment : デコレーターを使用して、ストーリーの外観を変更します
 };
 
 export const WithPinnedTasks = {
-  args: {
-    tasks: [
-      ...Default.args.tasks.slice(0, 5),
-      { id: '6', title: 'Task 6 (pinned)', state: 'TASK_PINNED' },
-    ],
-  },
+  decorators: [
+    (story) => {
+      const pinnedtasks = [
+        ...MockedState.tasks.slice(0, 5),
+        { id: '6', title: 'Task 6 (pinned)', state: 'TASK_PINNED' },
+      ];
+
+      return (
+        <Mockstore
+          taskboxState={{
+            ...MockedState,
+            tasks: pinnedtasks,
+          }}
+        >
+          {story()}
+        </Mockstore>
+      );
+    },
+  ],
 };
 
 export const Loading = {
-  args: {
-    tasks: [],
-    loading: true,
-  },
+  decorators: [
+    (story) => (
+      <Mockstore
+        taskboxState={{
+          ...MockedState,
+          status: 'loading',
+        }}
+      >
+        {story()}
+      </Mockstore>
+    ),
+  ],
 };
 
 export const Empty = {
-  args: {
-    // Shaping the stories through args composition.
-    // The data was inherited from the Loading story in Task.stories.jsx.
-    ...Loading.args,
-    loading: false,
-  },
+  decorators: [
+    (story) => (
+      <Mockstore
+        taskboxState={{
+          ...MockedState,
+          tasks: [],
+        }}
+      >
+        {story()}
+      </Mockstore>
+    ),
+  ],
 };
